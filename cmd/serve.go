@@ -40,8 +40,6 @@ func serveAPI(ctx context.Context, api *api.API) {
 	go func() {
 		<-ctx.Done()
 
-		logrus.Info("Shot from 1st")
-
 		if err := s.Shutdown(context.Background()); err != nil {
 			logrus.Error(err)
 		}
