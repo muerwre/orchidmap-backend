@@ -1,4 +1,4 @@
-package api
+package logger
 
 import (
 	"encoding/base64"
@@ -8,14 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
-
 	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/logger"
 	"github.com/muerwre/orchidgo/model"
-	"github.com/muerwre/orchidgo/router/auth"
+	"github.com/sirupsen/logrus"
 )
 
 type statusCodeRecorder struct {
@@ -24,38 +19,29 @@ type statusCodeRecorder struct {
 	StatusCode int
 }
 
-func (r *statusCodeRecorder) WriteHeader(statusCode int) {
-	r.StatusCode = statusCode
-	r.ResponseWriter.WriteHeader(statusCode)
-}
-
-type API struct {
+// Logger logs all request to console
+type Logger struct {
 	App    *app.App
 	Config *Config
-	Logger *logger.Logger
 }
 
-func New(a *app.App) (api *API, err error) {
-	api = &API{App: a}
+// CreateLogger creates new Logger
+func CreateLogger(a *app.App) (logger *Logger, err error) {
+	logger = &Logger{
+		App: a,
+	}
 
-	api.Config, err = InitConfig()
+	logger.Config, err = InitConfig()
 
 	if err != nil {
 		return nil, err
 	}
 
-	api.Logger, _ = logger.CreateLogger(a)
-
-	return api, nil
+	return logger, nil
 }
 
-func (a *API) Init(r *mux.Router) {
-	r.Handle("/hello", gziphandler.GzipHandler(a.Logger.Log(a.RootHandler))).Methods("GET")
-
-	auth.Router(r.PathPrefix("/test").Subrouter(), a.Logger)
-}
-
-func (a *API) OldLogger(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
+// Log is a subrouter, that adds logging
+func (l *Logger) Log(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, 100*1024*1024)
 
@@ -67,7 +53,7 @@ func (a *API) OldLogger(f func(*app.Context, http.ResponseWriter, *http.Request)
 			Hijacker:       hijacker,
 		}
 
-		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r))
+		ctx := l.App.NewContext().WithRemoteAddress(l.IPAddressForRequest(r, l.Config))
 		ctx = ctx.WithLogger(ctx.Logger.WithField("request_id", base64.RawURLEncoding.EncodeToString(model.NewId())))
 
 		defer func() {
@@ -102,21 +88,19 @@ func (a *API) OldLogger(f func(*app.Context, http.ResponseWriter, *http.Request)
 	})
 }
 
-func (a *API) RootHandler(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
-	_, err := w.Write([]byte(`{"hello" : "world"}`))
-	return err
-}
-
-func (a *API) IPAddressForRequest(r *http.Request) string {
+// IPAddressForRequest determines IP Address for request
+func (l *Logger) IPAddressForRequest(r *http.Request, c *Config) string {
 	addr := r.RemoteAddr
-	if a.Config.ProxyCount > 0 {
+	if c.ProxyCount > 0 {
 		h := r.Header.Get("X-Forwarded-For")
+
 		if h != "" {
 			clients := strings.Split(h, ",")
-			if a.Config.ProxyCount > len(clients) {
+
+			if c.ProxyCount > len(clients) {
 				addr = clients[0]
 			} else {
-				addr = clients[len(clients)-a.Config.ProxyCount]
+				addr = clients[len(clients)-c.ProxyCount]
 			}
 		}
 	}
