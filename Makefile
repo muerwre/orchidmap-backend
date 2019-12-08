@@ -43,5 +43,3 @@ ifndef HAS_LINTER
 	go get -u -v -d github.com/golangci/golangci-lint/cmd/golangci-lint && \
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint
 endif
-	# gometalinter --install --update
-	# go get -u 
