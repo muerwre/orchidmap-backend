@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -23,6 +24,17 @@ func Router(router *mux.Router, logger *logger.Logger) {
 
 // TestHandler handles sample request
 func TestHandler(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
-	_, err := w.Write([]byte(`its a test hand!`))
-	return err
+	res, _ := json.Marshal(map[string]string{
+		"test": "Hello! Its working?",
+	})
+
+	http.Error(w, string(res), 401)
+
+	return nil
+
+	// err := json.NewEncoder(w).Encode(map[string]string{
+	// 	"test": "Hello! Its working?",
+	// })
+
+	// return err
 }
