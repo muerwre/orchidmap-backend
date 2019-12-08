@@ -13,7 +13,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/muerwre/orchidgo/app"
+	"github.com/muerwre/orchidgo/logger"
 	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidgo/router/auth"
 )
 
 type statusCodeRecorder struct {
@@ -30,22 +32,30 @@ func (r *statusCodeRecorder) WriteHeader(statusCode int) {
 type API struct {
 	App    *app.App
 	Config *Config
+	Logger *logger.Logger
 }
 
 func New(a *app.App) (api *API, err error) {
 	api = &API{App: a}
+
 	api.Config, err = InitConfig()
+
 	if err != nil {
 		return nil, err
 	}
+
+	api.Logger, _ = logger.CreateLogger(a)
+
 	return api, nil
 }
 
 func (a *API) Init(r *mux.Router) {
-	r.Handle("/hello", gziphandler.GzipHandler(a.handler(a.RootHandler))).Methods("GET")
+	r.Handle("/hello", gziphandler.GzipHandler(a.Logger.Log(a.RootHandler))).Methods("GET")
+
+	auth.Router(r.PathPrefix("/test").Subrouter(), a.Logger)
 }
 
-func (a *API) handler(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
+func (a *API) OldLogger(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, 100*1024*1024)
 

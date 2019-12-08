@@ -16,8 +16,10 @@ func InitConfig() (*Config, error) {
 		Port:       viper.GetInt("Port"),
 		ProxyCount: viper.GetInt("ProxyCount"),
 	}
+
 	if config.Port == 0 {
 		config.Port = 9092
 	}
+
 	return config, nil
 }
