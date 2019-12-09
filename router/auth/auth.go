@@ -7,7 +7,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/mux"
 	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/logger"
+	"github.com/muerwre/orchidgo/utils/logger"
 )
 
 // Router creates new AuthRouter

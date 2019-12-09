@@ -47,7 +47,7 @@ func serveAPI(ctx context.Context, api *api.API) {
 		close(done)
 	}()
 
-	logrus.Infof("serving api at http://127.0.0.1:%d", api.Config.Port)
+	logrus.Infof("Listening http://127.0.0.1:%d", api.Config.Port)
 
 	if err := s.ListenAndServe(); err != http.ErrServerClosed {
 		logrus.Error(err)
@@ -65,6 +65,8 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
+		defer a.Close()
 
 		api, err := api.New(a)
 
@@ -93,6 +95,7 @@ var serveCmd = &cobra.Command{
 		}()
 
 		wg.Wait()
+
 		return nil
 	},
 }
