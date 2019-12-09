@@ -127,6 +127,7 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 			Uid:   fmt.Sprintf("vk:%d", data.Response[0].Id),
 			Name:  fmt.Sprintf("%s %s", data.Response[0].FirstName, data.Response[0].LastName),
 			Photo: fmt.Sprintf("%s", data.Response[0].Photo),
+			Role:  "vk",
 		},
 	)
 
@@ -136,7 +137,9 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 
 	random_url := ctx.DB.GenerateRandomUrl()
 
-	err = json.NewEncoder(w).Encode(AuthResponse{User: user, RandomUrl: random_url, Success: true})
+	err = json.NewEncoder(w).Encode(
+		AuthResponse{User: user, RandomUrl: random_url, Success: true},
+	)
 
 	if err != nil {
 		return err
