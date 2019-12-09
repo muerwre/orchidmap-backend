@@ -8,6 +8,7 @@ type Context struct {
 	Logger        logrus.FieldLogger
 	RemoteAddress string
 	DB            *db.DB
+	Config        *Config
 }
 
 func (ctx *Context) WithLogger(logger logrus.FieldLogger) *Context {

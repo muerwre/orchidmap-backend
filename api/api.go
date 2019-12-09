@@ -29,12 +29,5 @@ func New(a *app.App) (api *API, err error) {
 }
 
 func (a *API) Init(r *mux.Router) {
-	// r.Handle("/hello", gziphandler.GzipHandler(a.Logger.Log(a.RootHandler))).Methods("GET")
-
 	auth.Router(r.PathPrefix("/auth").Subrouter(), a.Logger)
 }
-
-// func (a *API) RootHandler(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
-// _, err := w.Write([]byte(`{"hello" : "world"}`))
-// return err
-// }
