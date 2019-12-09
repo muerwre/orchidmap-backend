@@ -3,9 +3,9 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql" // needed for gorm
+	"github.com/muerwre/orchidgo/model"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/theaaf/todos/model"
 )
 
 type DB struct {
@@ -31,7 +31,7 @@ func New() (*DB, error) {
 
 	logrus.Info("Connected to db")
 
-	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.User{}, &model.Route{})
 
 	return &DB{db}, nil
 }

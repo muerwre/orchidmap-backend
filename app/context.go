@@ -2,9 +2,12 @@ package app
 
 import "github.com/sirupsen/logrus"
 
+import "github.com/muerwre/orchidgo/db"
+
 type Context struct {
 	Logger        logrus.FieldLogger
 	RemoteAddress string
+	DB            *db.DB
 }
 
 func (ctx *Context) WithLogger(logger logrus.FieldLogger) *Context {

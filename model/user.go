@@ -1,16 +1,19 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
-	ID        uint `gorm:"primary_key;AUTO_INCREMENT;omitempty"`
-	Role      string
-	Token     string
-	FirstName string
-	LastName  string
-	Photo     string
-	Password  string `json:"-"`
-	Version   int    `json:"-"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Uid     string `json:"uid"`
+	Role    string `json:"role" gorm:"default:'guest'"`
+	Token   string `json:"token"`
+	Name    string `json:"name"`
+	Photo   string `json:"photo"`
+	Version int    `json:"-"`
+
+	ID        uint       `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time  `json:"-" gorm:"default:CURRENT_TIMESTAMP"`
+	UpdatedAt time.Time  `json:"-" gorm:"default:CURRENT_TIMESTAMP"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
 }
