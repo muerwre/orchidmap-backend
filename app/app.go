@@ -12,6 +12,7 @@ type App struct {
 func (a *App) NewContext() *Context {
 	return &Context{
 		Logger: logrus.New(),
+		DB:     a.DB,
 	}
 }
 
