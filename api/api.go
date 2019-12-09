@@ -4,8 +4,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/logger"
 	"github.com/muerwre/orchidgo/router/auth"
+	"github.com/muerwre/orchidgo/utils/logger"
 )
 
 type API struct {
