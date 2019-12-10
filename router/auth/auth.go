@@ -95,10 +95,15 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 	token, err := config.Exchange(context, code)
 
 	if err != nil {
+		fmt.Printf("HERE? %+v", err)
 		return err
 	}
 
-	url := fmt.Sprintf(`https://api.vk.com/method/users.get?user_id=%s&fields=photo&v=5.67&access_token=%s`, fmt.Sprintf("%v", token.Extra("user_id")), token.AccessToken)
+	url := fmt.Sprintf(
+		`https://api.vk.com/method/users.get?user_id=%s&fields=photo&v=5.67&access_token=%s`,
+		fmt.Sprintf("%v", token.Extra("user_id")),
+		token.AccessToken,
+	)
 
 	response, err := http.Get(url)
 
