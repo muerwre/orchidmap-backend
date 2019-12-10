@@ -95,7 +95,6 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 	token, err := config.Exchange(context, code)
 
 	if err != nil {
-		fmt.Printf("HERE? %+v", err)
 		return err
 	}
 
@@ -121,9 +120,9 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 
 	var data vk.VkApiResponse
 
-	json.Unmarshal(contents, &data)
+	err = json.Unmarshal(contents, &data)
 
-	if data.Response == nil {
+	if data.Response == nil || err != nil {
 		return errors.New("Can't get user")
 	}
 
@@ -131,7 +130,7 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 		&model.User{
 			Uid:   fmt.Sprintf("vk:%d", data.Response[0].Id),
 			Name:  fmt.Sprintf("%s %s", data.Response[0].FirstName, data.Response[0].LastName),
-			Photo: fmt.Sprintf("%s", data.Response[0].Photo),
+			Photo: fmt.Sprintf("%v", data.Response[0].Photo),
 			Role:  "vk",
 		},
 	)
@@ -152,3 +151,31 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 
 	return nil
 }
+
+/*
+	Example of parallel WG
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	userchan := make(chan *model.User, 1)
+	urlchan := make(chan string, 1)
+
+	go func(u chan *model.User, wg *sync.WaitGroup) {
+		fmt.Println("user started")
+		u <- ctx.DB.GenerateGuestUser()
+		wg.Done()
+		fmt.Println("user returned")
+	}(userchan, &wg)
+
+	go func(ru chan string, wg *sync.WaitGroup) {
+		fmt.Println("url started")
+		ru <- ctx.DB.GenerateRandomUrl()
+		fmt.Println("url returned")
+		wg.Done()
+	}(urlchan, &wg)
+
+	wg.Wait()
+
+	user, random_url := <-userchan, <-urlchan
+*/
