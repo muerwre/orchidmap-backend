@@ -8,11 +8,6 @@ import (
 )
 
 func (d *DB) CleanUp(t *time.Time) {
-	// var result struct {
-	// 	Id  int
-	// 	Uid string
-	// }
-
 	rows := d.Exec(`
 		DELETE FROM users
 		WHERE id IN(
