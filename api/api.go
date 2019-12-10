@@ -23,8 +23,9 @@ type API struct {
 }
 
 type ErrorCode struct {
-	Code  string   `json:"code"`
-	Stack []string `json:"stack"`
+	Code   string   `json:"code"`
+	Stack  []string `json:"stack"`
+	Reason string   `json:"reason"`
 }
 
 func New(a *app.App) (api *API, err error) {
@@ -108,6 +109,7 @@ func (a *API) IPAddressForRequest(r *http.Request, c *Config) string {
 	return strings.Split(strings.TrimSpace(addr), ":")[0]
 }
 
+// Handler catches and reports errors
 func (a *API) Handler(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r, a.Config))
@@ -130,10 +132,16 @@ func (a *API) Handler(f func(*app.Context, http.ResponseWriter, *http.Request) e
 
 		if err := f(ctx, w, r); err != nil {
 			ctx.Logger.Error(err)
-
+			reason := fmt.Sprintf("%v", err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			_ = json.NewEncoder(w).Encode(&ErrorCode{Code: "internal", Stack: strings.Split(stack, "\n")})
+			_ = json.NewEncoder(w).Encode(
+				&ErrorCode{
+					Code:   "internal",
+					Stack:  strings.Split(stack, "\n"),
+					Reason: reason,
+				},
+			)
 			return
 		}
 	})
