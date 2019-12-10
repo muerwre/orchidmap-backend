@@ -1,4 +1,4 @@
-package auth
+package controller
 
 import (
 	"context"
@@ -8,11 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/NYTimes/gziphandler"
-	"github.com/gorilla/mux"
 	"github.com/muerwre/orchidgo/app"
 	"github.com/muerwre/orchidgo/model"
-	"github.com/muerwre/orchidgo/utils/logger"
 	"github.com/muerwre/orchidgo/utils/vk"
 	"golang.org/x/oauth2"
 )
@@ -24,15 +21,10 @@ type AuthResponse struct {
 	Success   bool        `json:"success"`
 }
 
-// Router creates new AuthRouter
-func Router(router *mux.Router, logger *logger.Logger) {
-	router.Handle("/", gziphandler.GzipHandler(logger.Log(CheckCredentials))).Methods("GET")
-	router.Handle("/vk", gziphandler.GzipHandler(logger.Log(LoginVkUser))).Methods("GET")
-	router.Handle("/guest", gziphandler.GzipHandler(logger.Log(GetGuestUser))).Methods("GET")
-}
+type AuthController struct{}
 
 // CheckCredentials checks id and token and returns guest token if they're incorrect
-func CheckCredentials(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *AuthController) CheckCredentials(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
 	user, err := ctx.DB.AssumeUserExist(r.URL.Query()["id"][0], r.URL.Query()["token"][0])
 	error := ""
 
@@ -57,7 +49,7 @@ func CheckCredentials(ctx *app.Context, w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-func GetGuestUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *AuthController) GetGuestUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
 	user := ctx.DB.GenerateGuestUser()
 	random_url := ctx.DB.GenerateRandomUrl()
 
@@ -76,7 +68,7 @@ func GetGuestUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) erro
 	return nil
 }
 
-func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
 	context := context.Background()
 	config := &oauth2.Config{
 		ClientID:     ctx.Config.VkClientId,
@@ -151,31 +143,3 @@ func LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error
 
 	return nil
 }
-
-/*
-	Example of parallel WG
-
-	var wg sync.WaitGroup
-
-	wg.Add(2)
-	userchan := make(chan *model.User, 1)
-	urlchan := make(chan string, 1)
-
-	go func(u chan *model.User, wg *sync.WaitGroup) {
-		fmt.Println("user started")
-		u <- ctx.DB.GenerateGuestUser()
-		wg.Done()
-		fmt.Println("user returned")
-	}(userchan, &wg)
-
-	go func(ru chan string, wg *sync.WaitGroup) {
-		fmt.Println("url started")
-		ru <- ctx.DB.GenerateRandomUrl()
-		fmt.Println("url returned")
-		wg.Done()
-	}(urlchan, &wg)
-
-	wg.Wait()
-
-	user, random_url := <-userchan, <-urlchan
-*/

@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/router/auth"
 	"github.com/muerwre/orchidgo/utils/logger"
 )
 
@@ -29,5 +28,5 @@ func New(a *app.App) (api *API, err error) {
 }
 
 func (a *API) Init(r *mux.Router) {
-	auth.Router(r.PathPrefix("/auth").Subrouter(), a.Logger)
+	AuthRouter(r.PathPrefix("/auth").Subrouter(), a.Logger)
 }
