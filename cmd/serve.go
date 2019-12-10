@@ -36,6 +36,7 @@ func serveAPI(ctx context.Context, api *api.API) {
 	}
 
 	done := make(chan struct{})
+	ticker := time.NewTicker(24 * time.Hour)
 
 	go func() {
 		<-ctx.Done()
@@ -45,6 +46,19 @@ func serveAPI(ctx context.Context, api *api.API) {
 		}
 
 		close(done)
+	}()
+
+	go func() {
+		api.App.DB.CleanUp(nil)
+
+		for {
+			select {
+			case <-done:
+				return
+			case t := <-ticker.C:
+				api.App.DB.CleanUp(&t)
+			}
+		}
 	}()
 
 	logrus.Infof("Listening http://127.0.0.1:%d", api.Config.Port)
