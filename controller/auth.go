@@ -24,6 +24,8 @@ type AuthResponse struct {
 
 type AuthController struct{}
 
+var Auth = AuthController{}
+
 // CheckCredentials checks id and token and returns guest token if they're incorrect
 func (a *AuthController) CheckCredentials(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
 	user, err := ctx.DB.AssumeUserExist(r.URL.Query()["id"][0], r.URL.Query()["token"][0])

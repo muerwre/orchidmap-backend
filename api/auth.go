@@ -5,14 +5,9 @@ import (
 	"github.com/muerwre/orchidgo/controller"
 )
 
-type AuthRouter struct {
-}
-
 // AuthRouter for /api/auth/*
-func (a *AuthRouter) Init(router *mux.Router, api *API) {
-	ctrl := &controller.AuthController{}
-
-	router.Handle("/", api.Handler(ctrl.CheckCredentials)).Methods("GET")
-	router.Handle("/vk", api.Handler(ctrl.LoginVkUser)).Methods("GET")
-	router.Handle("/guest", api.Handler(ctrl.GetGuestUser)).Methods("GET")
+func AuthRouter(r *mux.Router, a *API) {
+	r.Handle("/", a.Handler(controller.Auth.CheckCredentials)).Methods("GET")
+	r.Handle("/vk", a.Handler(controller.Auth.LoginVkUser)).Methods("GET")
+	r.Handle("/guest", a.Handler(controller.Auth.GetGuestUser)).Methods("GET")
 }

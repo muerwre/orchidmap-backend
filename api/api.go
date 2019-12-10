@@ -27,6 +27,11 @@ type ErrorCode struct {
 	Stack  []string `json:"stack"`
 	Reason string   `json:"reason"`
 }
+type statusCodeRecorder struct {
+	http.ResponseWriter
+	http.Hijacker
+	StatusCode int
+}
 
 func New(a *app.App) (api *API, err error) {
 	api = &API{App: a}
@@ -43,13 +48,8 @@ func New(a *app.App) (api *API, err error) {
 func (a *API) Init(r *mux.Router) {
 	r.Use(gziphandler.GzipHandler, a.loggingMiddleware)
 
-	(&AuthRouter{}).Init(r.PathPrefix("/auth").Subrouter(), a)
-}
-
-type statusCodeRecorder struct {
-	http.ResponseWriter
-	http.Hijacker
-	StatusCode int
+	AuthRouter(r.PathPrefix("/auth").Subrouter(), a)
+	RouteRouter(r.PathPrefix("/route").Subrouter(), a)
 }
 
 func (a *API) loggingMiddleware(next http.Handler) http.Handler {
