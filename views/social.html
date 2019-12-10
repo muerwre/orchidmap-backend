@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <pre>
+          window.opener.postMessage({
+              type: 'oauth_login',
+              user: {
+                id: '{{ html .User.Uid }}',
+                token: '{{ html .User.Token }}',
+                name: '{{ html .User.Name }}',
+                photo: '{{ html .User.Photo }}',
+                role: '{{ html .User.Role }}',
+              }
+            }, '*');
+
+            window.close();
+        </pre>
+    </body>
+</html>
