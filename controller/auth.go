@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"text/template"
 
 	"github.com/muerwre/orchidgo/app"
 	"github.com/muerwre/orchidgo/model"
@@ -133,9 +134,9 @@ func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r 
 
 	random_url := ctx.DB.GenerateRandomUrl()
 
-	err = json.NewEncoder(w).Encode(
-		AuthResponse{User: user, RandomUrl: random_url, Success: true},
-	)
+	w.Header().Set("Content-Type", "text/html")
+	tmpl := template.Must(template.ParseFiles("views/social.html"))
+	err = tmpl.Execute(w, AuthResponse{User: user, RandomUrl: random_url, Success: true})
 
 	if err != nil {
 		return err
