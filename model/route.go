@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"math"
 	"strings"
 	"time"
 )
@@ -67,7 +68,13 @@ func (s *StickerArray) CleanForPost() {
 	out := &StickerArray{}
 
 	for _, b := range *s {
-		if b.Latlng.Lat != 0 && b.Latlng.Lng != 0 {
+		if b.Latlng.Lat != 0 &&
+			b.Latlng.Lng != 0 &&
+			b.Sticker != "" &&
+			b.Set != "" &&
+			len(b.Text) <= 256 &&
+			b.Angle >= -math.Pi &&
+			b.Angle <= math.Pi {
 			*out = append(*out, b)
 		}
 	}
