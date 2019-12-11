@@ -11,7 +11,7 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 
 	optional := r.Group("/").Use(a.AuthOptional)
 	{
-		optional.GET("/all/:tab", controller.Route.GetAllRoutes)
+		optional.GET("/list/*tab", controller.Route.GetAllRoutes)
 	}
 
 	restricted := r.Group("/").Use(a.AuthRequired)
