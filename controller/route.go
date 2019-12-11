@@ -69,8 +69,6 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 
 	if exist.ID != 0 {
 		route.ID = exist.ID
-		route.CreatedAt = exist.CreatedAt.UTC().Truncate(time.Second)
-		route.IsStarred = exist.IsStarred
 	} else {
 		route.CreatedAt = time.Now().UTC().Truncate(time.Second)
 		route.User = *u
@@ -81,7 +79,6 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 
 	if exist.ID != 0 {
 		d.Model(&route).Updates(route)
-		// d.Save(&route)
 	} else {
 		d.Create(&route)
 	}
