@@ -25,7 +25,6 @@ func serveAPI(ctx context.Context, api *api.API) {
 		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
 	)
 
-	// router := mux.NewRouter()
 	router := gin.Default()
 	router.LoadHTMLGlob("views/*")
 

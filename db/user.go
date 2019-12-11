@@ -42,3 +42,19 @@ func (db *DB) FindOrCreateUser(u *model.User) (*model.User, error) {
 
 	return user, nil
 }
+
+func (db *DB) GetUserByToken(token string) (*model.User, error) {
+	if token == "" {
+		return nil, errors.New("Credentials are empty")
+	}
+
+	user := &model.User{}
+
+	db.Where("token = ?", token).Find(&user).First(&user)
+
+	if user.ID == 0 {
+		return nil, errors.New("User not found")
+	}
+
+	return user, nil
+}
