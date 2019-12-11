@@ -37,7 +37,7 @@ type Route struct {
 	Stickers    StickerArray `gorm:"name:stickers;type:longtext" json:"stickers"`
 	Distance    float64      `json:"distance"`
 	IsPublic    bool         `json:"is_public"`
-	IsStarred   bool         `json:"is_starred"`
+	IsPublished bool         `json:"is_published"`
 	IsDeleted   bool         `json:"-"`
 	Logo        string       `json:"logo"`
 	Provider    string       `json:"provider"`

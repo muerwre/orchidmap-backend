@@ -14,9 +14,12 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 		restricted.POST("/", controller.Route.SaveRoute)
 		restricted.PATCH("/", controller.Route.PatchRoute)
 		restricted.DELETE("/", controller.Route.DeleteRoute)
+		restricted.POST("/publish", controller.Route.PublishRoute)
 	}
 
-	// 	router.post('/star', star);
+	optional := r.Group("/").Use(a.AuthOptional)
+	{
+		optional.GET("/all/:tab", controller.Route.GetAllRoutes)
+	}
 	// router.get('/list', list);
-
 }
