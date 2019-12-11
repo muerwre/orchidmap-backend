@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +16,25 @@ type RouteController struct{}
 type RoutePostInput struct {
 	Route *model.Route `json:"route"`
 	Force bool         `json:"force"`
+}
+
+type BetweenRange struct {
+	Min float64 `form:"min"`
+	Max float64 `form:"max"`
+}
+
+type RouteShallow struct {
+	Address     string  `json:"address" sql:"address"`
+	Distance    float64 `json:"distance" sql:"distance"`
+	Title       string  `json:"title" sql:"title"`
+	IsPublished bool    `json:"is_published" sql:"is_published"`
+	IsPublic    bool    `json:"is_public" sql:"is_public"`
+}
+
+type LimitRange struct {
+	Min   float64 `gorm:"column:min" sql:"min" json:"min"`
+	Max   float64 `gorm:"column:max" sql:"max" json:"max"`
+	Count int     `gorm:"column:count" sql:"count" json:"count"`
 }
 
 var Route = &RouteController{}
@@ -170,18 +190,69 @@ func (a *RouteController) PublishRoute(c *gin.Context) {
 }
 
 func (a *RouteController) GetAllRoutes(c *gin.Context) {
-	tab := c.Param("tab")
 	d := c.MustGet("DB").(*db.DB)
-	// u := c.MustGet("User").(*model.User)
+	u := c.MustGet("User").(*model.User)
 
-	if tab != "my" && tab != "all" && tab != "starred" {
+	tab := c.Param("tab")
+	between := &BetweenRange{}
+
+	if (tab != "my") &&
+		tab != "all" &&
+		tab != "starred" {
 		tab = "all"
 	}
 
-	routes := &[]model.Route{}
+	if tab == "my" && u.ID == 0 {
+		c.JSON(
+			http.StatusOK,
+			gin.H{"tab": tab, "routes": &[]RouteShallow{}, "limits": &LimitRange{Min: 0, Max: 0}, "between": between},
+		)
+		return
+	}
 
-	q := d.Find(&routes)
-	q.Where("starred = ?", true)
+	routes := &[]RouteShallow{}
 
-	c.JSON(http.StatusOK, gin.H{"tab": tab})
+	err := c.ShouldBindQuery(&between)
+
+	if err != nil {
+		between.Min, between.Max = 0, 0
+	} else {
+		c.BindQuery(&between)
+	}
+
+	if between.Max >= 200 || between.Max <= 0 {
+		between.Max = 1e4
+	}
+
+	if between.Min > between.Max || between.Min <= 0 {
+		between.Min = 0
+	}
+
+	q := d.Model(&routes).Where("distance >= ? AND distance <= ?", between.Min, between.Max)
+
+	if tab == "starred" {
+		q = q.Where("is_public = ? AND is_published = ?", true, true)
+	}
+
+	if tab == "my" {
+		q = q.Where("user_id = ?", u.ID)
+	}
+
+	limits := &LimitRange{}
+
+	q.Select("min(distance) as min, max(distance) as max, count(*) as count").First(&model.Route{}).Scan(&limits)
+	q.Find(&[]model.Route{}).Offset(0).Limit(20).Scan(&routes)
+
+	limits.Min = math.Floor((limits.Min / 25)) * 25
+	limits.Max = math.Ceil((limits.Max / 25)) * 25
+
+	if limits.Max <= 0 || len(*routes) == 0 {
+		limits.Min = 0
+	} else if limits.Min == limits.Max {
+		limits.Min = limits.Max - 25
+	} else if limits.Max > 200 {
+		limits.Max = 200
+	}
+
+	c.JSON(http.StatusOK, gin.H{"tab": tab, "routes": routes, "limits": limits, "between": between})
 }
