@@ -1,11 +1,9 @@
 package api
 
-import (
-	"github.com/gorilla/mux"
-)
+import "github.com/gin-gonic/gin"
 
 // RouteRouter for /api/route/*
-func RouteRouter(router *mux.Router, api *API) {
+func RouteRouter(router *gin.RouterGroup, api *API) {
 	// ctrl := &controller.AuthController{}
 
 	// router.Handle("/", api.Handler(ctrl.CheckCredentials)).Methods("GET")
