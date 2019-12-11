@@ -17,7 +17,7 @@ build: clean
 
 .PHONY: clean
 clean:
-	@rm -f bin/${GOOS}/${APP}
+	@rm -f bin/${APP}
 
 .PHONY: vendor
 vendor: prepare_dep
@@ -26,6 +26,14 @@ vendor: prepare_dep
 .PHONY: serve
 serve: build
 	bin/${APP} serve
+
+.PHONY: dist
+dist: build
+	mkdir -p dist
+	mkdir -p dist/views
+	cp bin/${APP} dist
+	cp -rf views bin
+	cp config.yaml dist
 
 .PHONY: watch
 watch: prepare_watcher
