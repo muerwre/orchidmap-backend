@@ -18,9 +18,10 @@ type RoutePostInput struct {
 	Force bool         `json:"force"`
 }
 
-type BetweenRange struct {
-	Min float64 `form:"min"`
-	Max float64 `form:"max"`
+type FilterRange struct {
+	Min    float64 `form:"min"`
+	Max    float64 `form:"max"`
+	Search string  `form:"search"`
 }
 
 type RouteShallow struct {
@@ -194,7 +195,7 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 	u := c.MustGet("User").(*model.User)
 
 	tab := c.Param("tab")
-	between := &BetweenRange{}
+	filter := &FilterRange{}
 
 	if (tab != "my") &&
 		tab != "all" &&
@@ -202,33 +203,33 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 		tab = "all"
 	}
 
-	if tab == "my" && u.ID == 0 {
+	routes := &[]RouteShallow{}
+
+	err := c.ShouldBindQuery(&filter)
+
+	if err != nil {
+		filter.Min, filter.Max = 0, 0
+	} else {
+		c.BindQuery(&filter)
+	}
+
+	if filter.Max >= 200 || filter.Max <= 0 {
+		filter.Max = 1e4
+	}
+
+	if filter.Min > filter.Max || filter.Min <= 0 {
+		filter.Min = 0
+	}
+
+	if (tab == "my" && u.ID == 0) || (filter.Search != "" && len(filter.Search) <= 3) {
 		c.JSON(
 			http.StatusOK,
-			gin.H{"tab": tab, "routes": &[]RouteShallow{}, "limits": &LimitRange{Min: 0, Max: 0}, "between": between},
+			gin.H{"tab": tab, "routes": &[]RouteShallow{}, "limits": &LimitRange{Min: 0, Max: 0}, "filter": filter},
 		)
 		return
 	}
 
-	routes := &[]RouteShallow{}
-
-	err := c.ShouldBindQuery(&between)
-
-	if err != nil {
-		between.Min, between.Max = 0, 0
-	} else {
-		c.BindQuery(&between)
-	}
-
-	if between.Max >= 200 || between.Max <= 0 {
-		between.Max = 1e4
-	}
-
-	if between.Min > between.Max || between.Min <= 0 {
-		between.Min = 0
-	}
-
-	q := d.Model(&routes).Where("distance >= ? AND distance <= ?", between.Min, between.Max)
+	q := d.Model(&routes).Where("distance >= ? AND distance <= ?", filter.Min, filter.Max)
 
 	if tab == "starred" {
 		q = q.Where("is_public = ? AND is_published = ?", true, true)
@@ -236,6 +237,10 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 
 	if tab == "my" {
 		q = q.Where("user_id = ?", u.ID)
+	}
+
+	if filter.Search != "" && len(filter.Search) > 3 {
+		q = q.Where("address RLIKE ? OR title RLIKE ?", filter.Search, filter.Search)
 	}
 
 	limits := &LimitRange{}
@@ -254,5 +259,5 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 		limits.Max = 200
 	}
 
-	c.JSON(http.StatusOK, gin.H{"tab": tab, "routes": routes, "limits": limits, "between": between})
+	c.JSON(http.StatusOK, gin.H{"tab": tab, "routes": routes, "limits": limits, "filter": filter})
 }
