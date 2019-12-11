@@ -27,8 +27,13 @@ vendor: prepare_dep
 serve: build
 	bin/${APP} serve
 
+.PHONY: watch
+watch: prepare_watcher
+	$(shell ${HAS_WATCHER} serve) 
+
 HAS_DEP := $(shell command -v dep;)
 HAS_LINTER := $(shell command -v golangci-lint;)
+HAS_WATCHER := $(shell command -v ${GOPATH}/bin/watcher;)
 
 .PHONY: prepare_dep
 prepare_dep:
@@ -42,4 +47,11 @@ prepare_linter:
 ifndef HAS_LINTER
 	go get -u -v -d github.com/golangci/golangci-lint/cmd/golangci-lint && \
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
+
+.PHONE: prepare_watcher
+prepare_watcher:
+ifndef HAS_WATCHER
+	go get github.com/canthefason/go-watcher && \
+	go install github.com/canthefason/go-watcher/cmd/watcher
 endif

@@ -73,7 +73,7 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	} else {
 		route.CreatedAt = time.Now().UTC().Truncate(time.Second)
 		route.User = *u
-		route.IsStarred = false
+		route.IsPublished = false
 	}
 
 	route.CleanForPost()
@@ -141,4 +141,47 @@ func (a *RouteController) DeleteRoute(c *gin.Context) {
 	d.Model(&route).Update(map[string]interface{}{"deleted_at": time.Now().UTC().Truncate(time.Second)})
 
 	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+}
+
+func (a *RouteController) PublishRoute(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+	u := c.MustGet("User").(*model.User)
+
+	address := c.PostForm("address")
+	published := c.PostForm("published")
+
+	route := &model.Route{}
+
+	d.Where("address = ?", address).First(&route)
+
+	if route.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+		return
+	}
+
+	if u.Role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admin can publish routes", "code": "insufficient_rights"})
+		return
+	}
+
+	d.Model(&route).Update(map[string]interface{}{"is_published": published == "true"})
+
+	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+}
+
+func (a *RouteController) GetAllRoutes(c *gin.Context) {
+	tab := c.Param("tab")
+	d := c.MustGet("DB").(*db.DB)
+	// u := c.MustGet("User").(*model.User)
+
+	if tab != "my" && tab != "all" && tab != "starred" {
+		tab = "all"
+	}
+
+	routes := &[]model.Route{}
+
+	q := d.Find(&routes)
+	q.Where("starred = ?", true)
+
+	c.JSON(http.StatusOK, gin.H{"tab": tab})
 }
