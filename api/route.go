@@ -9,6 +9,11 @@ import (
 func RouteRouter(r *gin.RouterGroup, a *API) {
 	r.GET("/", controller.Route.GetRoute)
 
+	optional := r.Group("/").Use(a.AuthOptional)
+	{
+		optional.GET("/all/:tab", controller.Route.GetAllRoutes)
+	}
+
 	restricted := r.Group("/").Use(a.AuthRequired)
 	{
 		restricted.POST("/", controller.Route.SaveRoute)
@@ -17,9 +22,5 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 		restricted.POST("/publish", controller.Route.PublishRoute)
 	}
 
-	optional := r.Group("/").Use(a.AuthOptional)
-	{
-		optional.GET("/all/:tab", controller.Route.GetAllRoutes)
-	}
 	// router.get('/list', list);
 }
