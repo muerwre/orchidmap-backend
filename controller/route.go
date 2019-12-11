@@ -117,3 +117,28 @@ func (a *RouteController) PatchRoute(c *gin.Context) {
 
 	c.JSON(http.StatusBadRequest, gin.H{"route": route})
 }
+
+func (a *RouteController) DeleteRoute(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+	u := c.MustGet("User").(*model.User)
+
+	address := c.PostForm("address")
+
+	route := &model.Route{}
+
+	d.Where("address = ?", address).First(&route)
+
+	if route.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+		return
+	}
+
+	if !route.CanBeEditedBy(u) {
+		c.JSON(http.StatusConflict, gin.H{"error": "Not an owner", "code": "not_an_owner"})
+		return
+	}
+
+	d.Model(&route).Update(map[string]interface{}{"deleted_at": time.Now().UTC().Truncate(time.Second)})
+
+	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+}

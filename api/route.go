@@ -13,13 +13,10 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 	{
 		restricted.POST("/", controller.Route.SaveRoute)
 		restricted.PATCH("/", controller.Route.PatchRoute)
+		restricted.DELETE("/", controller.Route.DeleteRoute)
 	}
 
 	// 	router.post('/star', star);
-	// router.post('/', post);
-	// router.get('/', get);
-	// router.patch('/', patch);
-	// router.delete('/', drop);
 	// router.get('/list', list);
 
 }

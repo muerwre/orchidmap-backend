@@ -120,7 +120,6 @@ func (r *Route) CleanForPost() {
 
 	res := &Route{
 		CreatedAt:   r.CreatedAt,
-		UpdatedAt:   time.Now().UTC().Truncate(time.Second),
 		Stickers:    r.Stickers,
 		Route:       r.Route,
 		Title:       strings.Trim(r.Title, ""),
