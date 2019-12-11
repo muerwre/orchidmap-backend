@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -84,4 +85,35 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{"route": route, "exist": exist.ID != 0})
+}
+
+func (a *RouteController) PatchRoute(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+	u := c.MustGet("User").(*model.User)
+
+	address := c.PostForm("address")
+	title := strings.Trim(c.PostForm("title"), "")
+	public := strings.Trim(c.PostForm("is_public"), "") == "true"
+
+	route := &model.Route{}
+
+	d.Where("address = ?", address).First(&route)
+
+	if route.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+		return
+	}
+
+	if !route.CanBeEditedBy(u) {
+		c.JSON(http.StatusConflict, gin.H{"error": "Not an owner", "code": "not_an_owner"})
+		return
+	}
+
+	if len(title) > 100 {
+		title = title[:100]
+	}
+
+	d.Model(&route).Update(map[string]interface{}{"title": title, "is_public": public})
+
+	c.JSON(http.StatusBadRequest, gin.H{"route": route})
 }

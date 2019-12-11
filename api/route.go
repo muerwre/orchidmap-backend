@@ -12,6 +12,7 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 	restricted := r.Group("/").Use(a.AuthRequired)
 	{
 		restricted.POST("/", controller.Route.SaveRoute)
+		restricted.PATCH("/", controller.Route.PatchRoute)
 	}
 
 	// 	router.post('/star', star);
