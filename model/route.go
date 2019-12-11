@@ -135,3 +135,7 @@ func (r *Route) CleanForPost() {
 
 	*r = *res
 }
+
+func (r *Route) CanBeEditedBy(u *User) bool {
+	return r.ID == 0 || r.UserId == u.ID || u.Role == "admin"
+}

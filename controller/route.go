@@ -57,7 +57,7 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 
 	d.Where("address = ?", route.Address).First(&exist)
 
-	if exist.ID != 0 && exist.UserId != u.ID {
+	if !exist.CanBeEditedBy(u) {
 		c.JSON(http.StatusConflict, gin.H{"error": "Not an owner", "code": "conflict"})
 		return
 	}
@@ -70,8 +70,6 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	if exist.ID != 0 {
 		route.ID = exist.ID
 		route.CreatedAt = exist.CreatedAt.UTC().Truncate(time.Second)
-		route.User = exist.User
-		route.UserId = exist.UserId
 		route.IsStarred = exist.IsStarred
 	} else {
 		route.CreatedAt = time.Now().UTC().Truncate(time.Second)
@@ -82,7 +80,8 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	route.CleanForPost()
 
 	if exist.ID != 0 {
-		d.Save(&route)
+		d.Model(&route).Updates(route)
+		// d.Save(&route)
 	} else {
 		d.Create(&route)
 	}
