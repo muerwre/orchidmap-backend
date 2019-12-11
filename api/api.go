@@ -1,19 +1,10 @@
 package api
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"runtime/debug"
-	"strings"
-	"time"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/model"
 )
 
 type API struct {
@@ -55,97 +46,117 @@ func (a *API) Init(r *gin.RouterGroup) {
 	RouteRouter(r.Group("/route"), a)
 }
 
-func (a *API) loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 100*1024*1024)
+func (a *API) AuthRequired(c *gin.Context) {
+	token := c.GetHeader("authorization")
 
-		beginTime := time.Now()
-
-		hijacker, _ := w.(http.Hijacker)
-		w = &statusCodeRecorder{
-			ResponseWriter: w,
-			Hijacker:       hijacker,
-		}
-
-		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r, a.Config))
-		ctx = ctx.WithLogger(ctx.Logger.WithField("request_id", base64.RawURLEncoding.EncodeToString(model.NewId())))
-
-		defer func() {
-			statusCode := w.(*statusCodeRecorder).StatusCode
-			if statusCode == 0 {
-				statusCode = 200
-			}
-			duration := time.Since(beginTime)
-
-			logger := ctx.Logger.WithFields(logrus.Fields{
-				"duration":    duration,
-				"status_code": statusCode,
-				"remote":      ctx.RemoteAddress,
-			})
-			logger.Info(r.Method + " " + r.URL.RequestURI())
-		}()
-
-		w.Header().Set("Content-Type", "application/json")
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-// IPAddressForRequest determines IP Address for request
-func (a *API) IPAddressForRequest(r *http.Request, c *Config) string {
-	addr := r.RemoteAddr
-
-	if c.ProxyCount > 0 {
-		h := r.Header.Get("X-Forwarded-For")
-
-		if h != "" {
-			clients := strings.Split(h, ",")
-
-			if c.ProxyCount > len(clients) {
-				addr = clients[0]
-			} else {
-				addr = clients[len(clients)-c.ProxyCount]
-			}
-		}
+	if token == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Empty credentials, id and token are required"})
+		return
 	}
 
-	return strings.Split(strings.TrimSpace(addr), ":")[0]
+	user, err := a.App.DB.GetUserByToken(token)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.Set("User", user)
+
+	c.Next()
 }
 
-// Handler catches and reports errors
-func (a *API) Handler(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r, a.Config))
-		ctx = ctx.WithLogger(ctx.Logger.WithField("request_id", base64.RawURLEncoding.EncodeToString(model.NewId())))
+// func (a *API) loggingMiddleware(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		r.Body = http.MaxBytesReader(w, r.Body, 100*1024*1024)
 
-		var stack string
+// 		beginTime := time.Now()
 
-		if a.Config.Debug {
-			stack = string(debug.Stack())
-		}
+// 		hijacker, _ := w.(http.Hijacker)
+// 		w = &statusCodeRecorder{
+// 			ResponseWriter: w,
+// 			Hijacker:       hijacker,
+// 		}
 
-		defer func() {
-			if r := recover(); r != nil {
-				w.Header().Set("Content-Type", "application/json")
-				ctx.Logger.Error(fmt.Errorf("%v: %s", r, debug.Stack()))
-				w.WriteHeader(http.StatusInternalServerError)
-				_ = json.NewEncoder(w).Encode(&ErrorCode{Code: "internal", Stack: strings.Split(stack, "\n")})
-			}
-		}()
+// 		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r, a.Config))
+// 		ctx = ctx.WithLogger(ctx.Logger.WithField("request_id", base64.RawURLEncoding.EncodeToString(model.NewId())))
 
-		if err := f(ctx, w, r); err != nil {
-			ctx.Logger.Error(err)
-			reason := fmt.Sprintf("%v", err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			_ = json.NewEncoder(w).Encode(
-				&ErrorCode{
-					Code:   "internal",
-					Stack:  strings.Split(stack, "\n"),
-					Reason: reason,
-				},
-			)
-			return
-		}
-	})
-}
+// 		defer func() {
+// 			statusCode := w.(*statusCodeRecorder).StatusCode
+// 			if statusCode == 0 {
+// 				statusCode = 200
+// 			}
+// 			duration := time.Since(beginTime)
+
+// 			logger := ctx.Logger.WithFields(logrus.Fields{
+// 				"duration":    duration,
+// 				"status_code": statusCode,
+// 				"remote":      ctx.RemoteAddress,
+// 			})
+// 			logger.Info(r.Method + " " + r.URL.RequestURI())
+// 		}()
+
+// 		w.Header().Set("Content-Type", "application/json")
+
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
+
+// // IPAddressForRequest determines IP Address for request
+// func (a *API) IPAddressForRequest(r *http.Request, c *Config) string {
+// 	addr := r.RemoteAddr
+
+// 	if c.ProxyCount > 0 {
+// 		h := r.Header.Get("X-Forwarded-For")
+
+// 		if h != "" {
+// 			clients := strings.Split(h, ",")
+
+// 			if c.ProxyCount > len(clients) {
+// 				addr = clients[0]
+// 			} else {
+// 				addr = clients[len(clients)-c.ProxyCount]
+// 			}
+// 		}
+// 	}
+
+// 	return strings.Split(strings.TrimSpace(addr), ":")[0]
+// }
+
+// // Handler catches and reports errors
+// func (a *API) Handler(f func(*app.Context, http.ResponseWriter, *http.Request) error) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		ctx := a.App.NewContext().WithRemoteAddress(a.IPAddressForRequest(r, a.Config))
+// 		ctx = ctx.WithLogger(ctx.Logger.WithField("request_id", base64.RawURLEncoding.EncodeToString(model.NewId())))
+
+// 		var stack string
+
+// 		if a.Config.Debug {
+// 			stack = string(debug.Stack())
+// 		}
+
+// 		defer func() {
+// 			if r := recover(); r != nil {
+// 				w.Header().Set("Content-Type", "application/json")
+// 				ctx.Logger.Error(fmt.Errorf("%v: %s", r, debug.Stack()))
+// 				w.WriteHeader(http.StatusInternalServerError)
+// 				_ = json.NewEncoder(w).Encode(&ErrorCode{Code: "internal", Stack: strings.Split(stack, "\n")})
+// 			}
+// 		}()
+
+// 		if err := f(ctx, w, r); err != nil {
+// 			ctx.Logger.Error(err)
+// 			reason := fmt.Sprintf("%v", err)
+// 			w.Header().Set("Content-Type", "application/json")
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 			_ = json.NewEncoder(w).Encode(
+// 				&ErrorCode{
+// 					Code:   "internal",
+// 					Stack:  strings.Split(stack, "\n"),
+// 					Reason: reason,
+// 				},
+// 			)
+// 			return
+// 		}
+// 	})
+// }

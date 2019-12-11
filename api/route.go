@@ -1,14 +1,18 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/muerwre/orchidgo/controller"
+)
 
 // RouteRouter for /api/route/*
-func RouteRouter(router *gin.RouterGroup, api *API) {
-	// ctrl := &controller.AuthController{}
+func RouteRouter(r *gin.RouterGroup, a *API) {
+	r.GET("/", controller.Route.GetRoute)
 
-	// router.Handle("/", api.Handler(ctrl.CheckCredentials)).Methods("GET")
-	// router.Handle("/vk", api.Handler(ctrl.LoginVkUser)).Methods("GET")
-	// router.Handle("/guest", api.Handler(ctrl.GetGuestUser)).Methods("GET")
+	restricted := r.Group("/").Use(a.AuthRequired)
+	{
+		restricted.POST("/", controller.Route.SaveRoute)
+	}
 
 	// 	router.post('/star', star);
 	// router.post('/', post);
