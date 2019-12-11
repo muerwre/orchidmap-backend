@@ -82,7 +82,7 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	route.CleanForPost()
 
 	if exist.ID != 0 {
-		d.Update(&route)
+		d.Save(&route)
 	} else {
 		d.Create(&route)
 	}

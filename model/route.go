@@ -14,11 +14,11 @@ type Point struct {
 }
 
 type Sticker struct {
-	Angle   float64
-	Latlng  Point
-	Sticker string
-	Set     string
-	Text    string
+	Angle   float64 `json:"angle"`
+	Latlng  Point   `json:"latlng"`
+	Sticker string  `json:"sticker"`
+	Set     string  `json:"set"`
+	Text    string  `json:"text"`
 }
 
 type PointArray []Point
