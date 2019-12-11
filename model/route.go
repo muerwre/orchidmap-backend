@@ -123,6 +123,7 @@ func (r *Route) CleanForPost() {
 		Logo:        r.Logo,
 		Address:     r.Address,
 		ID:          r.ID,
+		User:        r.User,
 	}
 
 	*r = *res
