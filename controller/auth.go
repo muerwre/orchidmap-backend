@@ -3,13 +3,13 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"text/template"
 
+	"github.com/gin-gonic/gin"
 	"github.com/muerwre/orchidgo/app"
+	"github.com/muerwre/orchidgo/db"
 	"github.com/muerwre/orchidgo/model"
 	"github.com/muerwre/orchidgo/utils/vk"
 	"golang.org/x/oauth2"
@@ -18,8 +18,6 @@ import (
 type AuthResponse struct {
 	User      *model.User `json:"user"`
 	RandomUrl string      `json:"random_url"`
-	Error     string      `json:"error"`
-	Success   bool        `json:"success"`
 }
 
 type AuthController struct{}
@@ -27,70 +25,70 @@ type AuthController struct{}
 var Auth = AuthController{}
 
 // CheckCredentials checks id and token and returns guest token if they're incorrect
-func (a *AuthController) CheckCredentials(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
-	user, err := ctx.DB.AssumeUserExist(r.URL.Query()["id"][0], r.URL.Query()["token"][0])
-	error := ""
+func (a *AuthController) CheckCredentials(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+
+	fmt.Printf("Query params are: %v %v", c.Query("id"), c.Query("token"))
+
+	user, err := d.AssumeUserExist(c.Query("id"), c.Query("token"))
+	status := http.StatusOK
 
 	if err != nil {
-		user = ctx.DB.GenerateGuestUser()
-		error = "User not found, falling back to guest"
-		ctx.DB.Create(&user)
+		user = d.GenerateGuestUser()
+		status = http.StatusCreated
+		d.Create(&user)
 	}
 
-	random_url := ctx.DB.GenerateRandomUrl()
+	random_url := d.GenerateRandomUrl()
 
 	if user == nil || random_url == "" {
-		return errors.New("Failed to create reandom sequence")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to create reandom sequence"})
+		return
 	}
 
-	err = json.NewEncoder(w).Encode(AuthResponse{User: user, RandomUrl: random_url, Error: error, Success: error == ""})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	c.JSON(status, AuthResponse{User: user, RandomUrl: random_url})
 }
 
-func (a *AuthController) GetGuestUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
-	user := ctx.DB.GenerateGuestUser()
-	random_url := ctx.DB.GenerateRandomUrl()
+func (a *AuthController) GetGuestUser(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+	user := d.GenerateGuestUser()
+	random_url := d.GenerateRandomUrl()
 
-	ctx.DB.Create(&user)
+	d.Create(&user)
 
 	if user == nil || random_url == "" {
-		return errors.New("Failed to create reandom sequence")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to create random user"})
+		return
 	}
 
-	err := json.NewEncoder(w).Encode(AuthResponse{User: user, RandomUrl: random_url, Success: true})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	c.JSON(200, AuthResponse{User: user, RandomUrl: random_url})
 }
 
-func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *AuthController) LoginVkUser(c *gin.Context) {
 	context := context.Background()
+	cf := c.MustGet("Config").(*app.Config)
+	d := c.MustGet("DB").(*db.DB)
+
 	config := &oauth2.Config{
-		ClientID:     ctx.Config.VkClientId,
-		ClientSecret: ctx.Config.VkClientSecret,
+		ClientID:     cf.VkClientId,
+		ClientSecret: cf.VkClientSecret,
 		Scopes:       []string{},
 		Endpoint:     vk.Endpoint,
 		RedirectURL:  "http://localhost:7777/api/auth/vk",
 	}
 
-	code := r.URL.Query()["code"][0]
+	code := c.Query("code")
 
 	if code == "" {
-		return errors.New("Code is incorrect")
+		c.JSON(http.StatusForbidden, gin.H{"error": "Code is incorrect"})
+		return
 	}
 
 	token, err := config.Exchange(context, code)
 
 	if err != nil {
-		return err
+		c.JSON(http.StatusForbidden, gin.H{"error": "Failed to get token"})
+		return
 	}
 
 	url := fmt.Sprintf(
@@ -102,7 +100,8 @@ func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r 
 	response, err := http.Get(url)
 
 	if err != nil {
-		return fmt.Errorf("failed getting user info: %s", err.Error())
+		c.JSON(http.StatusForbidden, gin.H{"error": "Failed getting user info"})
+		return
 	}
 
 	defer response.Body.Close()
@@ -110,7 +109,8 @@ func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r 
 	contents, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		return fmt.Errorf("failed read response: %s", err.Error())
+		c.JSON(http.StatusForbidden, gin.H{"error": "Failed to read response"})
+		return
 	}
 
 	var data vk.VkApiResponse
@@ -118,10 +118,11 @@ func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r 
 	err = json.Unmarshal(contents, &data)
 
 	if data.Response == nil || err != nil {
-		return errors.New("Can't get user")
+		c.JSON(http.StatusForbidden, gin.H{"error": "Can't get user"})
+		return
 	}
 
-	user, err := ctx.DB.FindOrCreateUser(
+	user, err := d.FindOrCreateUser(
 		&model.User{
 			Uid:   fmt.Sprintf("vk:%d", data.Response[0].Id),
 			Name:  fmt.Sprintf("%s %s", data.Response[0].FirstName, data.Response[0].LastName),
@@ -131,18 +132,11 @@ func (a *AuthController) LoginVkUser(ctx *app.Context, w http.ResponseWriter, r 
 	)
 
 	if err != nil {
-		return errors.New("Can't get user")
+		c.JSON(http.StatusForbidden, gin.H{"error": "Can't get user"})
+		return
 	}
 
-	random_url := ctx.DB.GenerateRandomUrl()
+	random_url := d.GenerateRandomUrl()
 
-	w.Header().Set("Content-Type", "text/html")
-	tmpl := template.Must(template.ParseFiles("views/social.html"))
-	err = tmpl.Execute(w, AuthResponse{User: user, RandomUrl: random_url, Success: true})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	c.HTML(http.StatusOK, "social.html", AuthResponse{User: user, RandomUrl: random_url})
 }

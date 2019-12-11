@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/gin-gonic/gin"
 	"github.com/muerwre/orchidgo/api"
 	"github.com/muerwre/orchidgo/app"
 )
@@ -25,9 +25,11 @@ func serveAPI(ctx context.Context, api *api.API) {
 		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
 	)
 
-	router := mux.NewRouter()
+	// router := mux.NewRouter()
+	router := gin.Default()
+	router.LoadHTMLGlob("views/*")
 
-	api.Init(router.PathPrefix("/api").Subrouter())
+	api.Init(router.Group("/api"))
 
 	s := &http.Server{
 		Addr:        fmt.Sprintf(":%d", api.Config.Port),

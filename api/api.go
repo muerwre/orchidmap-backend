@@ -9,10 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"github.com/gin-gonic/gin"
 	"github.com/muerwre/orchidgo/app"
 	"github.com/muerwre/orchidgo/model"
 )
@@ -45,11 +44,15 @@ func New(a *app.App) (api *API, err error) {
 	return api, nil
 }
 
-func (a *API) Init(r *mux.Router) {
-	r.Use(gziphandler.GzipHandler, a.loggingMiddleware)
+func (a *API) Init(r *gin.RouterGroup) {
+	r.Use(func(c *gin.Context) {
+		c.Set("DB", a.App.DB)
+		c.Set("Config", a.App.Config)
+		c.Next()
+	})
 
-	AuthRouter(r.PathPrefix("/auth").Subrouter(), a)
-	RouteRouter(r.PathPrefix("/route").Subrouter(), a)
+	AuthRouter(r.Group("/auth"), a)
+	RouteRouter(r.Group("/route"), a)
 }
 
 func (a *API) loggingMiddleware(next http.Handler) http.Handler {
