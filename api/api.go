@@ -37,20 +37,6 @@ func New(a *app.App) (api *API, err error) {
 }
 
 func (a *API) Init(r *gin.RouterGroup) {
-	// r.Use(cors.New(
-	// 	cors.Config{
-	// 		AllowOrigins:     []string{"*"},
-	// 		AllowMethods:     []string{"PUT", "PATCH", "DELETE", "GET", "POST", "OPTIONS"},
-	// 		AllowHeaders:     []string{"*"},
-	// 		ExposeHeaders:    []string{"Content-Length"},
-	// 		AllowCredentials: true,
-	// 		AllowOriginFunc: func(origin string) bool {
-	// 			return origin == "*"
-	// 		},
-	// 		MaxAge: 12 * time.Hour,
-	// 	}),
-	// )
-
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")

@@ -11,6 +11,7 @@ require (
 	github.com/bombsimon/wsl v1.2.8 // indirect
 	github.com/canthefason/go-watcher v0.2.4 // indirect
 	github.com/gin-contrib/cors v1.3.0
+	github.com/gin-gonic/autotls v0.0.0-20191129055149-ffaac874b99f
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-critic/go-critic v0.4.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
@@ -37,7 +38,7 @@ require (
 	github.com/spf13/viper v1.6.1
 	github.com/theaaf/todos v0.0.0-20190402231846-ad63ef47a387
 	github.com/uudashr/gocognit v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd // indirect
+	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
 	golang.org/x/tools v0.0.0-20191206204035-259af5ff87bd // indirect

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,25 +16,32 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/muerwre/orchidgo/api"
 	"github.com/muerwre/orchidgo/app"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func serveAPI(ctx context.Context, api *api.API) {
-	// cors := handlers.CORS(
-	// handlers.AllowedOrigins([]string{"*"}),
-	// handlers.AllowedMethods([]string{"*"}),
-	// handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
-	// )
-
 	router := gin.Default()
 	router.LoadHTMLGlob("views/*")
-	// router.RedirectTrailingSlash = false
-
 	api.Init(router.Group("/api"))
 
 	s := &http.Server{
 		Addr:        fmt.Sprintf(":%d", api.Config.Port),
 		Handler:     router,
 		ReadTimeout: 2 * time.Minute,
+	}
+
+	if len(api.Config.TlsHosts) > 0 {
+		fmt.Printf("We have certs! %v", api.Config.TlsHosts)
+
+		certManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(api.Config.TlsHosts...), //Your domain here
+			Cache:      autocert.DirCache("certs"),                     //Folder for storing certificates
+		}
+
+		s.TLSConfig = &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		}
 	}
 
 	done := make(chan struct{})
