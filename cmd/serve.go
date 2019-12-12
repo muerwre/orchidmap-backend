@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -19,20 +18,21 @@ import (
 )
 
 func serveAPI(ctx context.Context, api *api.API) {
-	cors := handlers.CORS(
-		handlers.AllowedOrigins([]string{"*"}),
-		handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "OPTIONS"}),
-		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
-	)
+	// cors := handlers.CORS(
+	// handlers.AllowedOrigins([]string{"*"}),
+	// handlers.AllowedMethods([]string{"*"}),
+	// handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	// )
 
 	router := gin.Default()
 	router.LoadHTMLGlob("views/*")
+	// router.RedirectTrailingSlash = false
 
 	api.Init(router.Group("/api"))
 
 	s := &http.Server{
 		Addr:        fmt.Sprintf(":%d", api.Config.Port),
-		Handler:     cors(router),
+		Handler:     router,
 		ReadTimeout: 2 * time.Minute,
 	}
 

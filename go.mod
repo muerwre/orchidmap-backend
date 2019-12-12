@@ -10,6 +10,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/bombsimon/wsl v1.2.8 // indirect
 	github.com/canthefason/go-watcher v0.2.4 // indirect
+	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-critic/go-critic v0.4.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
@@ -26,8 +27,6 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/securego/gosec v0.0.0-20191119104125-df484bfa9e9f // indirect

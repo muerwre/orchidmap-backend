@@ -7,14 +7,15 @@ import (
 
 // RouteRouter for /api/route/*
 func RouteRouter(r *gin.RouterGroup, a *API) {
+	restricted := r.Group("/").Use(a.AuthRequired)
+	optional := r.Group("/").Use(a.AuthOptional)
+
 	r.GET("/", controller.Route.GetRoute)
 
-	optional := r.Group("/").Use(a.AuthOptional)
 	{
-		optional.GET("/list/*tab", controller.Route.GetAllRoutes)
+		optional.GET("/list/:tab", controller.Route.GetAllRoutes)
 	}
 
-	restricted := r.Group("/").Use(a.AuthRequired)
 	{
 		restricted.POST("/", controller.Route.SaveRoute)
 		restricted.PATCH("/", controller.Route.PatchRoute)

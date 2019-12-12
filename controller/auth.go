@@ -28,9 +28,7 @@ var Auth = AuthController{}
 func (a *AuthController) CheckCredentials(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 
-	fmt.Printf("Query params are: %v %v", c.Query("id"), c.Query("token"))
-
-	user, err := d.AssumeUserExist(c.Query("id"), c.Query("token"))
+	user, err := d.AssumeUserExist(c.Query("token"))
 	status := http.StatusOK
 
 	if err != nil {

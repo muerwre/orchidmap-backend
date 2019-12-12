@@ -7,16 +7,14 @@ import (
 	"github.com/muerwre/orchidgo/model"
 )
 
-func (db *DB) AssumeUserExist(uid string, token string) (*model.User, error) {
-	if uid == "" || token == "" {
+func (db *DB) AssumeUserExist(token string) (*model.User, error) {
+	if token == "" {
 		return nil, errors.New("Empty credentials providen")
 	}
 
 	user := &model.User{}
 
-	db.Where("uid = ? AND token = ?", uid, token).Find(&user)
-
-	fmt.Printf("%+v", user)
+	db.Where("token = ?", token).Find(&user)
 
 	if user.Role == "" {
 		return nil, errors.New("Empty credentials providen")

@@ -1,9 +1,8 @@
 package controller
 
 import (
-	"math"
+	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,26 +15,6 @@ type RouteController struct{}
 type RoutePostInput struct {
 	Route *model.Route `json:"route"`
 	Force bool         `json:"force"`
-}
-
-type FilterRange struct {
-	Min    float64 `form:"min"`
-	Max    float64 `form:"max"`
-	Search string  `form:"search"`
-}
-
-type RouteShallow struct {
-	Address     string  `json:"address" sql:"address"`
-	Distance    float64 `json:"distance" sql:"distance"`
-	Title       string  `json:"title" sql:"title"`
-	IsPublished bool    `json:"is_published" sql:"is_published"`
-	IsPublic    bool    `json:"is_public" sql:"is_public"`
-}
-
-type LimitRange struct {
-	Min   float64 `gorm:"column:min" sql:"min" json:"min"`
-	Max   float64 `gorm:"column:max" sql:"max" json:"max"`
-	Count int     `gorm:"column:count" sql:"count" json:"count"`
 }
 
 var Route = &RouteController{}
@@ -56,7 +35,9 @@ func (a *RouteController) GetRoute(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, route)
+	url := d.GenerateRandomUrl()
+
+	c.JSON(http.StatusOK, gin.H{"route": route, "random_url": url})
 }
 
 func (a *RouteController) SaveRoute(c *gin.Context) {
@@ -105,20 +86,29 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 		d.Create(&route)
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{"route": route, "exist": exist.ID != 0})
+	c.JSON(http.StatusOK, gin.H{"route": route, "exist": exist.ID != 0})
 }
 
 func (a *RouteController) PatchRoute(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 	u := c.MustGet("User").(*model.User)
 
-	address := c.PostForm("address")
-	title := strings.Trim(c.PostForm("title"), "")
-	public := strings.Trim(c.PostForm("is_public"), "") == "true"
+	post := &struct {
+		Address string
+		Title   string
+		Public  bool `json:"is_public"`
+	}{}
+
+	err := c.BindJSON(&post)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	route := &model.Route{}
 
-	d.Where("address = ?", address).First(&route)
+	d.Where("address = ?", post.Address).First(&route)
 
 	if route.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
@@ -130,24 +120,38 @@ func (a *RouteController) PatchRoute(c *gin.Context) {
 		return
 	}
 
-	if len(title) > 100 {
-		title = title[:100]
+	if len(post.Title) > 100 {
+		post.Title = post.Title[:100]
 	}
 
-	d.Model(&route).Update(map[string]interface{}{"title": title, "is_public": public})
+	d.Model(&route).Update(map[string]interface{}{"title": post.Title, "is_public": post.Public})
 
-	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+	c.JSON(http.StatusOK, gin.H{"route": route})
 }
 
 func (a *RouteController) DeleteRoute(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 	u := c.MustGet("User").(*model.User)
 
-	address := c.PostForm("address")
+	post := &struct {
+		Address string
+	}{}
+
+	err := c.BindJSON(&post)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if post.Address == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
+		return
+	}
 
 	route := &model.Route{}
 
-	d.Where("address = ?", address).First(&route)
+	d.Where("address = ?", post.Address).First(&route)
 
 	if route.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
@@ -161,19 +165,33 @@ func (a *RouteController) DeleteRoute(c *gin.Context) {
 
 	d.Model(&route).Update(map[string]interface{}{"deleted_at": time.Now().UTC().Truncate(time.Second)})
 
-	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+	c.JSON(http.StatusOK, gin.H{"route": route})
 }
 
 func (a *RouteController) PublishRoute(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 	u := c.MustGet("User").(*model.User)
 
-	address := c.PostForm("address")
-	published := c.PostForm("published")
+	post := &struct {
+		Address   string
+		Published bool `json:"is_published"`
+	}{}
+
+	err := c.BindJSON(&post)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if post.Address == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
+		return
+	}
 
 	route := &model.Route{}
 
-	d.Where("address = ?", address).First(&route)
+	d.Where("address = ?", post.Address).First(&route)
 
 	if route.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
@@ -185,9 +203,9 @@ func (a *RouteController) PublishRoute(c *gin.Context) {
 		return
 	}
 
-	d.Model(&route).Update(map[string]interface{}{"is_published": published == "true"})
+	d.Model(&route).Update(map[string]interface{}{"is_published": post.Published})
 
-	c.JSON(http.StatusBadRequest, gin.H{"route": route})
+	c.JSON(http.StatusOK, gin.H{"route": route})
 }
 
 func (a *RouteController) GetAllRoutes(c *gin.Context) {
@@ -195,15 +213,16 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 	u := c.MustGet("User").(*model.User)
 
 	tab := c.Param("tab")
-	filter := &FilterRange{}
+	filter := &model.FilterRange{}
 
+	fmt.Printf("current tab is: %v", tab)
 	if (tab != "my") &&
-		tab != "all" &&
+		tab != "pending" &&
 		tab != "starred" {
 		tab = "all"
 	}
 
-	routes := &[]RouteShallow{}
+	routes := &[]model.RouteShallow{}
 
 	err := c.ShouldBindQuery(&filter)
 
@@ -224,12 +243,16 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 	if (tab == "my" && u.ID == 0) || (filter.Search != "" && len(filter.Search) <= 3) {
 		c.JSON(
 			http.StatusOK,
-			gin.H{"tab": tab, "routes": &[]RouteShallow{}, "limits": &LimitRange{Min: 0, Max: 0}, "filter": filter},
+			gin.H{"tab": tab, "routes": &[]model.RouteShallow{}, "limits": &model.LimitRange{Min: 0, Max: 0}, "filter": filter},
 		)
 		return
 	}
 
-	q := d.Model(&routes).Where("distance >= ? AND distance <= ?", filter.Min, filter.Max)
+	q := d.Model(&routes)
+
+	if tab == "pending" {
+		q = q.Where("is_public = ? AND is_published = ?", true, false)
+	}
 
 	if tab == "starred" {
 		q = q.Where("is_public = ? AND is_published = ?", true, true)
@@ -243,21 +266,17 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 		q = q.Where("address RLIKE ? OR title RLIKE ?", filter.Search, filter.Search)
 	}
 
-	limits := &LimitRange{}
+	limits := &model.LimitRange{}
 
 	q.Select("min(distance) as min, max(distance) as max, count(*) as count").First(&model.Route{}).Scan(&limits)
-	q.Find(&[]model.Route{}).Offset(0).Limit(20).Scan(&routes)
 
-	limits.Min = math.Floor((limits.Min / 25)) * 25
-	limits.Max = math.Ceil((limits.Max / 25)) * 25
+	q = q.Where("distance >= ? AND distance <= ?", filter.Min, filter.Max)
 
-	if limits.Max <= 0 || len(*routes) == 0 {
-		limits.Min = 0
-	} else if limits.Min == limits.Max {
-		limits.Min = limits.Max - 25
-	} else if limits.Max > 200 {
-		limits.Max = 200
-	}
+	q.Select("count(*) as count").First(&model.Route{}).Scan(&limits)
+
+	q.Find(&[]model.Route{}).Offset(filter.Shift).Limit(filter.Step).Scan(&routes)
+
+	limits.Normalize(len(*routes))
 
 	c.JSON(http.StatusOK, gin.H{"tab": tab, "routes": routes, "limits": limits, "filter": filter})
 }
