@@ -12,6 +12,9 @@ type Config struct {
 
 	// Output debugging messages
 	Debug bool
+
+	// TlsHosts
+	TlsHosts []string
 }
 
 func InitConfig() (*Config, error) {
@@ -19,6 +22,7 @@ func InitConfig() (*Config, error) {
 		Port:       viper.GetInt("Port"),
 		ProxyCount: viper.GetInt("ProxyCount"),
 		Debug:      viper.GetBool("API.Debug"),
+		TlsHosts:   viper.GetStringSlice("API.TlsHosts"),
 	}
 
 	if config.Port == 0 {
