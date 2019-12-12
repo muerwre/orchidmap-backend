@@ -28,12 +28,12 @@ serve: build
 	bin/${APP} serve
 
 .PHONY: dist
-dist: build
-	mkdir -p dist
-	mkdir -p dist/views
-	cp bin/${APP} dist
-	cp -rf views bin
-	cp config.yaml dist
+dist: dist
+	# mkdir -p dist
+	# mkdir -p dist/views
+	# cp bin/${APP} dist
+	# cp -rf views bin
+	# cp config.yaml dist
 
 .PHONY: watch
 watch: prepare_watcher
