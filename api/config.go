@@ -13,8 +13,8 @@ type Config struct {
 	// Output debugging messages
 	Debug bool
 
-	// TlsHosts
-	TlsHosts []string
+	// TlsFiles
+	TlsFiles []string
 
 	// Host
 	Host string
@@ -25,7 +25,7 @@ func InitConfig() (*Config, error) {
 		Port:       viper.GetInt("Port"),
 		ProxyCount: viper.GetInt("ProxyCount"),
 		Debug:      viper.GetBool("API.Debug"),
-		TlsHosts:   viper.GetStringSlice("API.TlsHosts"),
+		TlsFiles:   viper.GetStringSlice("API.TlsFiles"),
 		Host:       viper.GetString("API.Host"),
 	}
 
