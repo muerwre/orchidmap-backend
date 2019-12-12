@@ -25,7 +25,7 @@ func serveAPI(ctx context.Context, api *api.API) {
 	api.Init(router.Group("/api"))
 
 	s := &http.Server{
-		Addr:        fmt.Sprintf(":%d", api.Config.Port),
+		Addr:        fmt.Sprintf("%s:%d", api.Config.Host, api.Config.Port),
 		Handler:     router,
 		ReadTimeout: 2 * time.Minute,
 	}
