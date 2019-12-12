@@ -24,13 +24,15 @@ func serveAPI(ctx context.Context, api *api.API) {
 	router.LoadHTMLGlob("views/*")
 	api.Init(router.Group("/api"))
 
+	hasCerts := len(api.Config.TlsHosts) > 0
+
 	s := &http.Server{
 		Addr:        fmt.Sprintf("%s:%d", api.Config.Host, api.Config.Port),
 		Handler:     router,
 		ReadTimeout: 2 * time.Minute,
 	}
 
-	if len(api.Config.TlsHosts) > 0 {
+	if hasCerts {
 		fmt.Printf("We have certs! %v", api.Config.TlsHosts)
 
 		certManager := autocert.Manager{
@@ -70,10 +72,18 @@ func serveAPI(ctx context.Context, api *api.API) {
 		}
 	}()
 
-	logrus.Infof("Listening http://127.0.0.1:%d", api.Config.Port)
+	if hasCerts {
+		logrus.Infof(fmt.Sprintf("Listening https://%s:%d", api.Config.Host, api.Config.Port))
 
-	if err := s.ListenAndServe(); err != http.ErrServerClosed {
-		logrus.Error(err)
+		if err := s.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
+			logrus.Error(err)
+		}
+	} else {
+		logrus.Infof(fmt.Sprintf("Listening http://%s:%d", api.Config.Host, api.Config.Port))
+
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			logrus.Error(err)
+		}
 	}
 
 	<-done
