@@ -30,7 +30,7 @@ func (d *DB) GenerateGuestUser() *model.User {
 		d.Model(&model.User{}).Where("uid = ?", id).Count(&c)
 
 		if c == 0 {
-			return &model.User{Uid: id, Token: token}
+			return &model.User{Uid: id, Token: token, Role: "guest"}
 		}
 	}
 

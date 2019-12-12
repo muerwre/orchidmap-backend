@@ -8,6 +8,27 @@ import (
 	"time"
 )
 
+type FilterRange struct {
+	Min    float64 `form:"min" json:"min"`
+	Max    float64 `form:"max" json:"max"`
+	Search string  `form:"search" json:"search"`
+	Shift  int     `form:"shift" json:"shift"`
+	Step   int     `form:"step" json:"step"`
+}
+
+type RouteShallow struct {
+	Address     string  `json:"address" sql:"address"`
+	Distance    float64 `json:"distance" sql:"distance"`
+	Title       string  `json:"title" sql:"title"`
+	IsPublished bool    `json:"is_published" sql:"is_published"`
+	IsPublic    bool    `json:"is_public" sql:"is_public"`
+}
+
+type LimitRange struct {
+	Min   float64 `gorm:"column:min" sql:"min" json:"min"`
+	Max   float64 `gorm:"column:max" sql:"max" json:"max"`
+	Count int     `gorm:"column:count" sql:"count" json:"count"`
+}
 type Point struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
@@ -43,7 +64,7 @@ type Route struct {
 	Provider    string       `json:"provider"`
 	Description string       `json:"description"`
 	User        User         `gorm:"foreignkey:UserId" json:"-"`
-	UserId      uint         `json:"-"`
+	UserId      uint         `json:"owner"`
 }
 
 func (p *PointArray) Scan(src interface{}) error {
@@ -137,4 +158,17 @@ func (r *Route) CleanForPost() {
 
 func (r *Route) CanBeEditedBy(u *User) bool {
 	return r.ID == 0 || r.UserId == u.ID || u.Role == "admin"
+}
+
+func (l *LimitRange) Normalize(items int) {
+	l.Min = math.Floor((l.Min / 25)) * 25
+	l.Max = math.Ceil((l.Max / 25)) * 25
+
+	if l.Max <= 0 || items == 0 {
+		l.Min = 0
+	} else if l.Min == l.Max {
+		l.Min = l.Max - 25
+	} else if l.Max > 200 {
+		l.Max = 200
+	}
 }
