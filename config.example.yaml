@@ -7,3 +7,5 @@ Vk:
   ClientSecret: SECRET_API_KEY_FROM_VK
 API:
   Debug: false
+  TlsFiles: []
+  Host: 
