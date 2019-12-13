@@ -23,7 +23,7 @@ func InitConfig() (*Config, error) {
 		Port:           viper.GetString("Port"),
 		VkClientId:     viper.GetString("Vk.ClientId"),
 		VkClientSecret: viper.GetString("Vk.ClientSecret"),
-		HasTls:         len(viper.GetStringSlice("TlsFiles")) == 2,
+		HasTls:         len(viper.GetStringSlice("API.TlsFiles")) == 2,
 	}
 
 	fmt.Printf("TLS FILES LENGTH IS %v", len(viper.GetStringSlice("TlsFiles")))
