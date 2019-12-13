@@ -5,6 +5,9 @@ import (
 )
 
 type Config struct {
+	Host string
+	Port string
+
 	// Client id for vk api
 	VkClientId string
 
@@ -14,6 +17,8 @@ type Config struct {
 
 func InitConfig() (*Config, error) {
 	config := &Config{
+		Host:           viper.GetString("Host"),
+		Port:           viper.GetString("Port"),
 		VkClientId:     viper.GetString("Vk.ClientId"),
 		VkClientSecret: viper.GetString("Vk.ClientSecret"),
 	}
