@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/model"
 )
 
 func (db *DB) AssumeUserExist(token string) (*model.User, error) {

@@ -3,7 +3,7 @@ package db
 import (
 	"errors"
 
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/model"
 )
 
 func (db *DB) FindRouteByAddress(address string) (*model.Route, error) {

@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/muerwre/orchidgo/controller"
+	"github.com/muerwre/orchidmap-backend/controller"
 )
 
 // AuthRouter for /api/auth/*

@@ -2,7 +2,7 @@ package app
 
 import "github.com/sirupsen/logrus"
 
-import "github.com/muerwre/orchidgo/db"
+import "github.com/muerwre/orchidmap-backend/db"
 
 type Context struct {
 	Logger        logrus.FieldLogger

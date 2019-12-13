@@ -1,4 +1,4 @@
-module github.com/muerwre/orchidgo
+module github.com/muerwre/orchidmap-backend
 
 // go: no requirements found in Gopkg.lock
 

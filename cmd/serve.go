@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gin-gonic/gin"
-	"github.com/muerwre/orchidgo/api"
-	"github.com/muerwre/orchidgo/app"
+	"github.com/muerwre/orchidmap-backend/api"
+	"github.com/muerwre/orchidmap-backend/app"
 )
 
 func serveAPI(ctx context.Context, api *api.API) {

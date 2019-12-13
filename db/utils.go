@@ -3,7 +3,7 @@ package db
 import (
 	"math/rand"
 
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/model"
 )
 
 var symbols = "ABCDEFGHIJKLMOPQRSTUVXYZabcdefghijgmlopqrstuvxyz01234567890"

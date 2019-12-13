@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/app"
+	"github.com/muerwre/orchidmap-backend/model"
 )
 
 type API struct {
