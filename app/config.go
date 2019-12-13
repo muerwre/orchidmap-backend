@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -25,9 +24,6 @@ func InitConfig() (*Config, error) {
 		VkClientSecret: viper.GetString("Vk.ClientSecret"),
 		HasTls:         len(viper.GetStringSlice("API.TlsFiles")) == 2,
 	}
-
-	fmt.Printf("TLS FILES LENGTH IS %v", len(viper.GetStringSlice("TlsFiles")))
-	fmt.Printf("TLS ENABLED? %v", config.HasTls)
 
 	return config, nil
 }
