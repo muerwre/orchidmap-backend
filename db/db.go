@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql" // needed for gorm
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/model"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

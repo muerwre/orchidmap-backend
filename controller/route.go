@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/muerwre/orchidgo/db"
-	"github.com/muerwre/orchidgo/model"
+	"github.com/muerwre/orchidmap-backend/db"
+	"github.com/muerwre/orchidmap-backend/model"
 )
 
 type RouteController struct{}

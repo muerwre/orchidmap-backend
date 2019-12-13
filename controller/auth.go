@@ -8,10 +8,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/muerwre/orchidgo/app"
-	"github.com/muerwre/orchidgo/db"
-	"github.com/muerwre/orchidgo/model"
-	"github.com/muerwre/orchidgo/utils/vk"
+	"github.com/muerwre/orchidmap-backend/app"
+	"github.com/muerwre/orchidmap-backend/db"
+	"github.com/muerwre/orchidmap-backend/model"
+	"github.com/muerwre/orchidmap-backend/utils/vk"
 	"golang.org/x/oauth2"
 )
 
