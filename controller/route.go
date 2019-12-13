@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -215,7 +214,6 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 	tab := c.Param("tab")
 	filter := &model.FilterRange{}
 
-	fmt.Printf("current tab is: %v", tab)
 	if (tab != "my") &&
 		tab != "pending" &&
 		tab != "starred" {

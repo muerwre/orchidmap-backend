@@ -1,4 +1,3 @@
-// Package vk provides constants for using OAuth2 to access VK.com.
 package vk // import "golang.org/x/oauth2/vk"
 
 import (

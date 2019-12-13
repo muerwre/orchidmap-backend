@@ -85,6 +85,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	token, err := config.Exchange(context, code)
 
 	if err != nil {
+		fmt.Printf("Cant get token (1) %v", err)
 		c.JSON(http.StatusForbidden, gin.H{"error": "Failed to get token"})
 		return
 	}
@@ -98,6 +99,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	response, err := http.Get(url)
 
 	if err != nil {
+		fmt.Printf("Cant get token (2) %v", err)
 		c.JSON(http.StatusForbidden, gin.H{"error": "Failed getting user info"})
 		return
 	}
@@ -107,6 +109,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	contents, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
+		fmt.Printf("Cant get token (3) %v", err)
 		c.JSON(http.StatusForbidden, gin.H{"error": "Failed to read response"})
 		return
 	}
@@ -116,6 +119,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	err = json.Unmarshal(contents, &data)
 
 	if data.Response == nil || err != nil {
+		fmt.Printf("Cant get token (4) %v", err)
 		c.JSON(http.StatusForbidden, gin.H{"error": "Can't get user"})
 		return
 	}
@@ -130,6 +134,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	)
 
 	if err != nil {
+		fmt.Printf("Cant get token (5) %v", err)
 		c.JSON(http.StatusForbidden, gin.H{"error": "Can't get user"})
 		return
 	}
