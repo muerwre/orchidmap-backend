@@ -66,13 +66,18 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	context := context.Background()
 	cf := c.MustGet("Config").(*app.Config)
 	d := c.MustGet("DB").(*db.DB)
+	proto := "http"
+
+	if cf.HasTls {
+		proto = "https"
+	}
 
 	config := &oauth2.Config{
 		ClientID:     cf.VkClientId,
 		ClientSecret: cf.VkClientSecret,
 		Scopes:       []string{},
 		Endpoint:     vk.Endpoint,
-		RedirectURL:  fmt.Sprintf("http://%s:%s/api/auth/vk", cf.Host, cf.Port),
+		RedirectURL:  fmt.Sprintf("%s://%s:%s/api/auth/vk", proto, cf.Host, cf.Port),
 	}
 
 	fmt.Printf("VL HOST: http://%s:%s/api/auth/vk", cf.Host, cf.Port)

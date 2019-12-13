@@ -5,8 +5,9 @@ import (
 )
 
 type Config struct {
-	Host string
-	Port string
+	Host   string
+	Port   string
+	HasTls bool
 
 	// Client id for vk api
 	VkClientId string
@@ -21,6 +22,7 @@ func InitConfig() (*Config, error) {
 		Port:           viper.GetString("Port"),
 		VkClientId:     viper.GetString("Vk.ClientId"),
 		VkClientSecret: viper.GetString("Vk.ClientSecret"),
+		HasTls:         len(viper.GetStringSlice("TlsFiles")) == 2,
 	}
 
 	return config, nil
