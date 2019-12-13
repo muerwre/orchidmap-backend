@@ -30,20 +30,6 @@ func serveAPI(ctx context.Context, api *api.API) {
 		ReadTimeout: 2 * time.Minute,
 	}
 
-	if hasCerts {
-		fmt.Printf("We have certs! %v", api.Config.TlsFiles)
-
-		// certManager := autocert.Manager{
-		// 	Prompt:     autocert.AcceptTOS,
-		// 	HostPolicy: autocert.HostWhitelist(api.Config.TlsHosts...), //Your domain here
-		// 	Cache:      autocert.DirCache("certs"),                     //Folder for storing certificates
-		// }
-
-		// s.TLSConfig = &tls.Config{
-		// 	GetCertificate: certManager.GetCertificate,
-		// }
-	}
-
 	done := make(chan struct{})
 	ticker := time.NewTicker(24 * time.Hour)
 
