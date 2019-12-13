@@ -75,6 +75,8 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 		RedirectURL:  fmt.Sprintf("http://%s:%s/api/auth/vk", cf.Host, cf.Port),
 	}
 
+	fmt.Printf("VL HOST: http://%s:%s/api/auth/vk", cf.Host, cf.Port)
+
 	code := c.Query("code")
 
 	if code == "" {
