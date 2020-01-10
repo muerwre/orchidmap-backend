@@ -57,7 +57,7 @@ type Route struct {
 	Route       PointArray   `sql:"route" gorm:"name:route;type:longtext" json:"route"`
 	Stickers    StickerArray `gorm:"name:stickers;type:longtext" json:"stickers"`
 	Distance    float64      `json:"distance"`
-	IsPublic    bool         `json:"is_public"`
+	IsPublic    bool         `json:"is_public" gorm:"name:is_public"`
 	IsPublished bool         `json:"is_published"`
 	IsDeleted   bool         `json:"-"`
 	Logo        string       `json:"logo"`
