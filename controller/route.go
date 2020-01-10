@@ -71,6 +71,7 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 
 	if exist.ID != 0 {
 		route.ID = exist.ID
+		route.User = *u
 	} else {
 		route.CreatedAt = time.Now().UTC().Truncate(time.Second)
 		route.User = *u
@@ -80,7 +81,7 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	route.CleanForPost()
 
 	if exist.ID != 0 {
-		d.Model(&route).Updates(route)
+		d.Save(&route)
 	} else {
 		d.Create(&route)
 	}
