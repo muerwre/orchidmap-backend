@@ -151,6 +151,7 @@ func (r *Route) CleanForPost() {
 		Address:     r.Address,
 		ID:          r.ID,
 		User:        r.User,
+		IsPublic:    r.IsPublic,
 	}
 
 	*r = *res
