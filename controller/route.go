@@ -242,7 +242,12 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 	if (tab == "my" && u.ID == 0) || (filter.Search != "" && len(filter.Search) <= 3) {
 		c.JSON(
 			http.StatusOK,
-			gin.H{"tab": tab, "routes": &[]model.RouteShallow{}, "limits": &model.LimitRange{Min: 0, Max: 0}, "filter": filter},
+			gin.H{
+				"tab":    tab,
+				"routes": &[]model.RouteShallow{},
+				"limits": &model.LimitRange{Min: 0, Max: 0},
+				"filter": filter,
+			},
 		)
 		return
 	}
@@ -267,13 +272,21 @@ func (a *RouteController) GetAllRoutes(c *gin.Context) {
 
 	limits := &model.LimitRange{}
 
-	q.Select("min(distance) as min, max(distance) as max, count(*) as count").First(&model.Route{}).Scan(&limits)
+	q.Select("min(distance) as min, max(distance) as max, count(*) as count").
+		First(&model.Route{}).
+		Scan(&limits)
 
 	q = q.Where("distance >= ? AND distance <= ?", filter.Min, filter.Max)
 
-	q.Select("count(*) as count").First(&model.Route{}).Scan(&limits)
+	q.Select("count(*) as count").
+		First(&model.Route{}).
+		Scan(&limits)
 
-	q.Find(&[]model.Route{}).Offset(filter.Shift).Limit(filter.Step).Scan(&routes)
+	q.Find(&[]model.Route{}).
+		Offset(filter.Shift).
+		Limit(filter.Step).
+		Order("updated_at desc").
+		Scan(&routes)
 
 	limits.Normalize(len(*routes))
 
