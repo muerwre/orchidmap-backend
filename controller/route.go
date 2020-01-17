@@ -65,15 +65,20 @@ func (a *RouteController) SaveRoute(c *gin.Context) {
 	}
 
 	if exist.ID != 0 && !force {
-		c.JSON(http.StatusConflict, gin.H{"error": "Overwrite confirmation needed", "code": "already_exist"})
+		c.JSON(http.StatusConflict, gin.H{
+			"error": "Overwrite confirmation needed",
+			"code":  "already_exist",
+		})
 		return
 	}
 
 	if exist.ID != 0 {
 		route.ID = exist.ID
 		route.User = *u
+		route.UpdatedAt = time.Now().UTC().Truncate(time.Second)
 	} else {
 		route.CreatedAt = time.Now().UTC().Truncate(time.Second)
+		route.UpdatedAt = time.Now().UTC().Truncate(time.Second)
 		route.User = *u
 		route.IsPublished = false
 	}
