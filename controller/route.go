@@ -69,6 +69,7 @@ func (a *RouteController) GetRandomRoute(c *gin.Context) {
 
 	if r.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"id": r.Address, "title": r.Title, "distance": r.Distance, "description": r.Description})
