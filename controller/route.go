@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,10 +43,25 @@ func (a *RouteController) GetRoute(c *gin.Context) {
 func (a *RouteController) GetRandomRoute(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 	r := &model.Route{}
+	min, err := strconv.Atoi(c.Query("min"))
 
-	d.Where("is_public = ? AND is_published = ?", true, true).
-		Order("RAND()").
-		First(&r)
+	if err != nil {
+		min = 0
+	}
+
+	max, err := strconv.Atoi(c.Query("max"))
+
+	if err != nil {
+		max = 0
+	}
+
+	q := d.Where("is_public = ? AND is_published = ?", true, true).Order("RAND()")
+
+	if min >= 0 && max >= 0 && max > min {
+		q = q.Where("distance >= ? AND distance <= ?", float32(min)*0.8, float32(max)*1.2)
+	}
+
+	q.First(&r)
 
 	if r.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
