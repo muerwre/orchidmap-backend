@@ -51,7 +51,7 @@ func (a *RouteController) GetRandomRoute(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"url": r.Address})
+	c.JSON(http.StatusOK, gin.H{"id": r.Address, "title": r.Title, "distance": r.Distance})
 }
 
 func (a *RouteController) SaveRoute(c *gin.Context) {
