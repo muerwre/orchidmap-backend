@@ -39,6 +39,21 @@ func (a *RouteController) GetRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"route": route, "random_url": url})
 }
 
+func (a *RouteController) GetRandomRoute(c *gin.Context) {
+	d := c.MustGet("DB").(*db.DB)
+	r := &model.Route{}
+
+	d.Where("is_public = ? AND is_published = ?", true, true).
+		Order("RAND()").
+		First(&r)
+
+	if r.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Route not found"})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"url": r.Address})
+}
+
 func (a *RouteController) SaveRoute(c *gin.Context) {
 	d := c.MustGet("DB").(*db.DB)
 	u := c.MustGet("User").(*model.User)

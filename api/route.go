@@ -11,6 +11,7 @@ func RouteRouter(r *gin.RouterGroup, a *API) {
 	optional := r.Group("/").Use(a.AuthOptional)
 
 	r.GET("/", controller.Route.GetRoute)
+	r.GET("/random", controller.Route.GetRandomRoute)
 
 	{
 		optional.GET("/list/:tab", controller.Route.GetAllRoutes)
