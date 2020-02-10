@@ -62,7 +62,7 @@ func (a *RouteController) GetRandomRoute(c *gin.Context) {
 	}
 
 	if min == 0 && max >= 0 && max > min {
-		q = q.Where("distance >= ? AND distance <= ?", float32(max)*0.8, float32(max)*1.2)
+		q = q.Where("distance >= ? AND distance <= ?", float32(max)*0.7, float32(max)*1.3)
 	}
 
 	q.First(&r)
