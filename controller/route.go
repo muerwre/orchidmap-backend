@@ -57,11 +57,11 @@ func (a *RouteController) GetRandomRoute(c *gin.Context) {
 
 	q := d.Where("is_public = ? AND is_published = ?", true, true).Order("RAND()")
 
-	if min > 0 && max >= 0 && max > min {
+	if min > 0 && max >= 0 && max < 400 && max > min {
 		q = q.Where("distance >= ? AND distance <= ?", float32(min)*0.8, float32(max)*1.2)
 	}
 
-	if min == 0 && max >= 0 && max > min {
+	if min == 0 && max >= 0 && max < 400 && max > min {
 		q = q.Where("distance >= ? AND distance <= ?", float32(max)*0.7, float32(max)*1.3)
 	}
 
