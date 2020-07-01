@@ -21,12 +21,14 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - .:/go
+    environment: 
+      EXPOSE: ${EXPOSE}
     entrypoint: ./wait-for-it.sh -t 90 db:3306 -- ./orchidgo serve
     depends_on: 
         - db
     healthcheck:
-      test: ["CMD", "curl -f http://localhost:$${EXPOSE}/api/route/list/all?min=0&max=1000&step=1"]
-      interval: 10m
+      test: ["CMD", "curl -f http://localhost:$EXPOSE/api/route/list/all?min=0&max=1000&step=1"]
+      interval: 5m
       timeout: 30s
       retries: 3
 volumes:
