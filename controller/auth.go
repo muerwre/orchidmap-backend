@@ -78,7 +78,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 		ClientSecret: cf.VkClientSecret,
 		Scopes:       []string{},
 		Endpoint:     vk.Endpoint,
-		RedirectURL:  fmt.Sprintf("%s://%s:%s/api/auth/vk", proto, cf.Host, cf.Port),
+		RedirectURL:  fmt.Sprintf("%s/api/auth/vk", cf.VkCallbackUrl),
 	}
 
 	code := c.Query("code")

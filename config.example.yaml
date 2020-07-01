@@ -4,6 +4,7 @@ DB:
   URI: login:password@tcp(127.0.0.1)/database?parseTime=true
   Debug: true
 Vk:
+  CallbackUrl: https://backend.map.vault48.org
   ClientId: 123456
   ClientSecret: SECRET_API_KEY_FROM_VK
 API:

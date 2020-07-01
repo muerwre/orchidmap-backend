@@ -5,15 +5,12 @@ import (
 )
 
 type Config struct {
-	Host   string
-	Port   string
-	HasTls bool
-
-	// Client id for vk api
-	VkClientId string
-
-	// Client secret for vk api
+	Host           string
+	Port           string
+	HasTls         bool
+	VkClientId     string
 	VkClientSecret string
+	VkCallbackUrl  string
 }
 
 func InitConfig() (*Config, error) {
@@ -22,6 +19,7 @@ func InitConfig() (*Config, error) {
 		Port:           viper.GetString("Port"),
 		VkClientId:     viper.GetString("Vk.ClientId"),
 		VkClientSecret: viper.GetString("Vk.ClientSecret"),
+		VkCallbackUrl:  viper.GetString("Vk.CallbackUrl"),
 		HasTls:         len(viper.GetStringSlice("API.TlsFiles")) == 2,
 	}
 

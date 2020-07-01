@@ -9,8 +9,6 @@ services:
       MYSQL_PASS: 'pass'
       MYSQL_DATABASE: 'map'
       MYSQL_ROOT_HOST: '%' 
-    ports:
-      - 3316:3306
     volumes:
       - ${MYSQL_VOLUME}:/var/lib/mysql
   app:
@@ -19,7 +17,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - ${EXPOSE}:7777
+      - ${EXPOSE}:${EXPOSE}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - .:/go
