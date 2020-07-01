@@ -1,0 +1,33 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_USER: 'user'
+      MYSQL_PASS: 'pass'
+      MYSQL_DATABASE: 'map'
+      MYSQL_ROOT_HOST: '%' 
+    volumes:
+      - ${MYSQL_VOLUME}:/var/lib/mysql
+  app:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${EXPOSE}:7777
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - .:/go
+    entrypoint: ./wait-for-it.sh -t 90 db:3306 -- ./orchidgo serve
+    depends_on: 
+        - db
+    healthcheck:
+      test: ["CMD", "curl -f http://localhost:7777/api/route/list/all?min=0&max=1000&step=1 || kill 1"]
+      interval: 10m
+      timeout: 30s
+      retries: 3
+volumes:
+  node_modules:
