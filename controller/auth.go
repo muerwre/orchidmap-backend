@@ -12,6 +12,7 @@ import (
 	"github.com/muerwre/orchidmap-backend/db"
 	"github.com/muerwre/orchidmap-backend/model"
 	"github.com/muerwre/orchidmap-backend/utils/vk"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -91,6 +92,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Failed to get token"})
+		logrus.Infof("Failed to get token: %v", err.Error())
 		return
 	}
 
@@ -104,6 +106,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Failed getting user info"})
+		logrus.Infof("Failed getting user info: %v", err.Error())
 		return
 	}
 
@@ -122,6 +125,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 
 	if data.Response == nil || err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Can't get user"})
+
 		return
 	}
 
