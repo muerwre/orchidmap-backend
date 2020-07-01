@@ -27,7 +27,7 @@ services:
     depends_on: 
         - db
     healthcheck:
-      test: ["CMD", "curl -f http://localhost:$EXPOSE/api/route/list/all?min=0\&max=1000\&step=1"]
+      test: ["CMD", "curl -f http://localhost:$EXPOSE/api/route/list/all"]
       interval: 5m
       timeout: 30s
       retries: 3
