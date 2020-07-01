@@ -26,10 +26,5 @@ services:
     entrypoint: ./wait-for-it.sh -t 90 db:3306 -- ./orchidgo serve
     depends_on: 
         - db
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://app:$EXPOSE/api/route/list/all", "&&", "kill", "-s", "2", "1"]
-      interval: 1m
-      timeout: 30s
-      retries: 1
 volumes:
   node_modules:

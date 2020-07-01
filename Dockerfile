@@ -10,4 +10,5 @@ COPY ./config.yaml .
 COPY ./views/* views/
 
 EXPOSE 7777
+HEALTHCHECK --interval=1m --timeout=2s CMD curl -f http://app:$EXPOSE/api/route/list/all && kill -s 2 1
 CMD ["./orchidgo", "serve"]
