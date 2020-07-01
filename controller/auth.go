@@ -67,11 +67,6 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	context := context.Background()
 	cf := c.MustGet("Config").(*app.Config)
 	d := c.MustGet("DB").(*db.DB)
-	proto := "http"
-
-	if cf.HasTls {
-		proto = "https"
-	}
 
 	config := &oauth2.Config{
 		ClientID:     cf.VkClientId,
