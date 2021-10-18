@@ -19,8 +19,6 @@ steps:
         - REACT_APP_REMOTE_CURRENT
       tag:
         - ${DRONE_BRANCH}
-      custom_labels:
-        - "commit=${DRONE_COMMIT_SHA}"
       username:
         from_secret: global_docker_login
       password:
