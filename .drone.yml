@@ -14,9 +14,6 @@ steps:
         - master
     settings:
       dockerfile: Dockerfile
-      build_args_from_env:
-        - REACT_APP_API_HOST
-        - REACT_APP_REMOTE_CURRENT
       tag:
         - ${DRONE_BRANCH}
       username:
