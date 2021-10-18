@@ -92,7 +92,7 @@ func (a *AuthController) LoginVkUser(c *gin.Context) {
 	}
 
 	url := fmt.Sprintf(
-		`https://api.vk.com/method/users.get?user_id=%s&fields=photo&v=5.67&access_token=%s`,
+		`https://api.vk.com/method/users.get?user_id=%s&fields=photo&v=5.89&access_token=%s`,
 		fmt.Sprintf("%v", int(token.Extra("user_id").(float64))),
 		token.AccessToken,
 	)
